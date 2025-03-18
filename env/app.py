@@ -16,6 +16,7 @@ class MyTask(db.Model):
     content = db.Column(db.String(100), nullable = False)
     complete = db.Column(db.Integer, default = 0)
     created = db.Column(db.DateTime, default = datetime.utcnow)
+    newURL = db.Column(db.String(100), nullable = False, unique=True)
 
     def  __repr__(self) -> str:
         return f"Task {self.id}"
@@ -30,10 +31,13 @@ def index():
     #add a task "POST"
     if request.method == "POST":
         current_task = request.form['content']
-        new_task = MyTask(content = current_task)
+        new_task = MyTask(content = current_task, newURL="")
         #store the retrieved data into database
         try:
             db.session.add(new_task)
+            db.session.commit()
+
+            new_task.newURL = f"/shorten/{new_task.id}"
             db.session.commit()
             return redirect("/")
         except Exception as e:
@@ -72,6 +76,21 @@ def edit(id:int):
             return f"Error:{e}"
     else:
         return render_template('edit.html', task = task)
+
+
+@app.route("/shorten/<int:id>")
+def reroute(id: int):
+    # Retrieve the URL by its ID
+    url_record = MyTask.query.get_or_404(id)
+    original_url = url_record.content
+
+    # Ensure the URL is absolute (starts with "http://" or "https://")
+    if not original_url.startswith(("http://", "https://")):
+        original_url = "https://" + original_url + ".com" # Default to HTTPS
+
+    return redirect(original_url)
+
+
 
 
 #runner and debugger
