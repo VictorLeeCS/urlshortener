@@ -4,14 +4,12 @@ from flask_scss import Scss
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 
-
 app = Flask(__name__)
 Scss(app)
 
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATION"] = False
 db = SQLAlchemy(app)
-
 
 class MyTask(db.Model):
     id = db.Column(db.Integer, primary_key = True)
@@ -23,10 +21,8 @@ class MyTask(db.Model):
         return f"Task {self.id}"
 
 
-
 with app.app_context():
     db.create_all()
-
 
 
 @app.route("/", methods = ["POST", "GET"])
